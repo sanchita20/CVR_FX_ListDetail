@@ -1,0 +1,10 @@
+.tiitleDiv{
+    display: flex;
+    justify-content: center;
+}
+
+.listItemDiv{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
