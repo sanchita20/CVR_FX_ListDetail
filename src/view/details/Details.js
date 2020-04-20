@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from 'react-redux'
 import Title from '../../component/title/Title';
 import Strings from '../../res/Strings';
 import PropTypes from 'prop-types';
@@ -15,30 +16,42 @@ class Details extends React.Component {
         super(props);
 
         const { state } = this.props.location;
-        if (!!state) {
-            const { id, name, achievement, language, details } = state.data;
-            this.id = id;
-            this.name = name;
-            this.achievement = achievement;
-            this.language = language;
-            this.details = details;
-        } else {
-            //get data from localStogare
-            this.localId = JSON.parse(localStorage.getItem(LOCAL_STORAGE_SELECTED_ID));
-            this.localData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_DATA));
 
-            this.localData.forEach(element => {
-                const { id, name, achievement, language, details } = element;
-                if (id === this.localId) {
-                    this.id = id;
-                    this.name = name;
-                    this.achievement = achievement;
-                    this.language = language;
-                    this.details = details;
-                }
-            })
+        if (!!state) {
+            const { listData } = this.props;
+            const { id } = state;
+            this.id = id;
+
+            if (listData.length === 0) {
+                //get data from localStogare
+                this.localId = JSON.parse(localStorage.getItem(LOCAL_STORAGE_SELECTED_ID));
+                this.localData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_DATA));
+
+                this.localData.forEach(element => {
+                    const { id, name, achievement, language, details } = element;
+                    if (id === this.localId) {
+                        this.id = id;
+                        this.name = name;
+                        this.achievement = achievement;
+                        this.language = language;
+                        this.details = details;
+                    }
+                })
+            } else {
+                listData.forEach(element => {
+                    const { id, name, achievement, language, details } = element;
+                    if (this.id === id) {
+                        this.id = id;
+                        this.name = name;
+                        this.achievement = achievement;
+                        this.language = language;
+                        this.details = details;
+                    }
+                })
+            }
         }
     }
+
     render() {
         return (
             <div>
@@ -59,6 +72,14 @@ class Details extends React.Component {
     }
 }
 
+const mapStateToProps = (state) => {
+    return {
+        listData: state.data,
+        isLoading: state.isLoading,
+        error: state.error
+    }
+}
+
 Details.defaultProps = {
     id: undefined,
     name: undefined,
@@ -76,4 +97,4 @@ Details.propTypes = {
 }
 
 
-export default Details;
+export default connect(mapStateToProps)(Details)

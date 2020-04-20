@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from 'prop-types';
-import axios from 'axios';
 import { CircularProgress } from '@material-ui/core';
+import { connect } from 'react-redux'
+import { fetchData } from '../../action/Action';
 import Title from '../../component/title/Title'
 import ListItem from '../../component/listItem/ListItem'
 import DennisRitchie from '../../assets/images/dennis_ritchie.jpg'
@@ -14,7 +15,7 @@ import BrianKernighan from '../../assets/images/brian_kernighan.jpg'
 import KenThompson from '../../assets/images/ken_thompson.jpg'
 import Strings from '../../res/Strings';
 import './style.css';
-import { URL, LOCAL_STORAGE_DATA, LOCAL_STORAGE_SELECTED_ID } from '../../res/Constants';
+import { LOCAL_STORAGE_SELECTED_ID } from '../../res/Constants';
 
 const {
     listPageTitle
@@ -24,20 +25,14 @@ class List extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            listData: [],
             selectedId: ''
         }
     }
 
     //To fet API data
     componentDidMount() {
-        axios.get(URL)
-            .then(res => {
-                const { success } = res.data;
-                this.setState({ listData: success }, () => {
-                    localStorage.setItem(LOCAL_STORAGE_DATA, JSON.stringify(this.state.listData))
-                });
-            })
+        const { fetchData } = this.props;
+        fetchData();
     }
 
     //To set data to local storage and pass data to next screen
@@ -49,6 +44,7 @@ class List extends Component {
             history.push({
                 pathname: '/details',
                 state: {
+                    id: this.state.selectedId,
                     data: data
                 }
             })
@@ -81,7 +77,7 @@ class List extends Component {
     }
 
     render() {
-        const { listData } = this.state;
+        const { isLoading, listData, error } = this.props;
 
         return (
             <div>
@@ -90,7 +86,7 @@ class List extends Component {
                 </div>
                 <div className='listItemDiv'>
                     {
-                        listData.length > 0 ? listData.map((item, index) => {
+                        !isLoading && listData.length > 0 ? listData.map((item, index) => {
                             const { name, id } = item;
                             return (
                                 <div onClick={() => this.itemClicked(item)}>
@@ -106,13 +102,30 @@ class List extends Component {
     }
 }
 
+const mapStateToProps = (state) => {
+    return {
+        listData: state.data,
+        isLoading: state.isLoading,
+        error: state.error
+    }
+}
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        fetchData: () => dispatch(fetchData())
+    }
+}
+
 List.defaultProps = {
-    success: []
+    listData: undefined,
+    isLoading: true,
+    error: undefined
 }
 
 List.propTypes = {
-    success: PropTypes.array
+    listData: PropTypes.array,
+    isLoading: PropTypes.bool,
+    error: PropTypes.string
 }
 
-
-export default List;
+export default connect(mapStateToProps, mapDispatchToProps)(List)
